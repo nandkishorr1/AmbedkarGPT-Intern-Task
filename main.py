@@ -1,48 +1,55 @@
+import os
+from langchain_community.document_loaders import TextLoader
+from langchain_text_splitters import CharacterTextSplitter
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores import Chroma
+from langchain_community.llms import Ollama
+
+# 1. Load the speech
+loader = TextLoader("speech.txt")
+docs = loader.load()
+
+# 2. Split into chunks
+splitter = CharacterTextSplitter(chunk_size=300, chunk_overlap=50)
+chunks = splitter.split_documents(docs)
+
+# 3. Load embeddings
+embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+
+# 4. Create vector DB
+vectordb = Chroma.from_documents(chunks, embedding=embeddings, persist_directory="db")
+vectordb.persist()
+
+retriever = vectordb.as_retriever(search_kwargs={"k": 3})
+
+# 5. LLM (Mistral via Ollama)
+llm = Ollama(model="mistral")
+
+def generate_answer(question):
+    # Retrieve context
+    docs = retriever.get_relevant_documents(question)
+    context = "\n\n".join([d.page_content for d in docs])
+
+    prompt = f"""
+You are an assistant answering only from the provided context.
+
+CONTEXT:
+{context}
+
+QUESTION:
+{question}
+
+ANSWER:
 """
-AmbedkarGPT-Intern-Task
-A simple command-line Q&A system powered by LangChain, ChromaDB, HuggingFaceEmbeddings, and Ollama (Mistral 7B).
-- Loads Dr. B.R. Ambedkar's short speech from 'speech.txt'.
-- Builds a local vector store and answers questions using RAG (Retrieval Augmented Generation).
-"""
-from langchain.document_loaders import TextLoader
-from langchain.text_splitters import CharacterTextSplitter
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.vectorstores import Chroma
-from langchain.llms import Ollama
-from langchain.chains import RetrievalQA
 
-def main():
-    # 1. Load the provided text file
-    loader = TextLoader("speech.txt")
-    documents = loader.load()
+    response = llm.invoke(prompt)
+    return response
 
-    # 2. Split the text into manageable chunks
-    splitter = CharacterTextSplitter(chunk_size=300, chunk_overlap=50)
-    docs = splitter.split_documents(documents)
+print("AmbedkarGPT RAG System Ready!")
+while True:
+    q = input("\nAsk a question (or type 'exit'): ")
+    if q.lower() == "exit":
+        break
 
-    # 3. Create Embeddings and store them in a local vector store
-    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-    vectordb = Chroma.from_documents(docs, embeddings, persist_directory="db")
-    vectordb.persist()
-
-    # 4. Configure the LLM (Ollama, using Mistral 7B)
-    llm = Ollama(model="mistral")
-
-    # 5. Build the Retrieval-QA Chain
-    qa = RetrievalQA.from_chain_type(
-        llm=llm,
-        chain_type="stuff",          # "stuff" for simple QA (default)
-        retriever=vectordb.as_retriever(search_kwargs={"k": 2})  # Retrieve top 2 chunks
-    )
-
-    print("Welcome to AmbedkarGPT! Ask questions about the provided speech. Type 'exit' to quit.\n")
-    while True:
-        user_input = input("You: ").strip()
-        if user_input.lower() in {"exit", "quit"}:
-            print("Goodbye!")
-            break
-        response = qa.run(user_input)
-        print("Answer:", response, "\n")
-
-if __name__ == "__main__":
-    main()
+    answer = generate_answer(q)
+    print("\nAnswer:", answer)

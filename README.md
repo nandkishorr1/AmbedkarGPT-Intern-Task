@@ -1,56 +1,44 @@
-# AmbedkarGPT-Intern-Task
+# AmbedkarGPT — Phase 1 (RAG Command-Line Prototype)
 
-A command-line Q&A system that answers questions from a short excerpt of Dr. B.R. Ambedkar's "Annihilation of Caste".  
-Tech stack: Python 3.8+, LangChain, ChromaDB, HuggingFace (MiniLM), Ollama (Mistral 7B).
+This project is a simple RAG-based question answering system built using:
+- LangChain
+- ChromaDB
+- HuggingFace embeddings (all-MiniLM-L6-v2)
+- Ollama (Mistral 7B)
+
+The system loads the provided speech.txt, builds a vector store, and answers questions entirely offline.
+
+---
 
 ## Setup Instructions
 
-1. **Clone this repo:**
-   ```
-   git clone https://github.com/<your_handle>/AmbedkarGPT-Intern-Task.git
-   cd AmbedkarGPT-Intern-Task
-   ```
+### 1. Create virtual env
+Windows:
+    python -m venv venv
+    venv\Scripts\activate
 
-2. **Set up a Python environment and install dependencies:**
-   ```sh
-   python3 -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt
-   ```
+Linux/Mac:
+    python -m venv venv
+    source venv/bin/activate
 
-3. **Install and run Ollama (for local Mistral 7B):**
-   - Download Ollama:  
-     `curl -fsSL https://ollama.ai/install.sh | sh`
-   - Pull the Mistral model:  
-     `ollama pull mistral`
-   - Start Ollama service:
-     ```
-     ollama serve
-     ```
+### 2. Install dependencies
+    pip install -r requirements.txt
 
-4. **Run AmbedkarGPT:**
-   ```
-   python main.py
-   ```
+### 3. Install Ollama and pull model
+    curl -fsSL https://ollama.ai/install.sh | sh
+    ollama pull mistral
 
-5. **Ask questions!**  
-   Try things like:
-   - What does Dr. Ambedkar say about the shastras?
-   - Why is caste hard to abolish?
-   - What analogy does he use for social reform?
-   - Type `exit` to quit.
+### 4. Run the program
+    python main.py
 
-## File Descriptions
+You will see a prompt. Ask questions about the speech, e.g.:
+- What is the remedy against caste?
+- Why does Ambedkar oppose the shastras?
 
-- `main.py` — Main code orchestrating the RAG pipeline.
-- `requirements.txt` — Python dependencies.
-- `speech.txt` — The short excerpt of Dr. Ambedkar's speech.
-- `README.md` — This file.
-
-## Notes
-
-- No API keys, no online accounts needed.
-- Everything runs locally using free, open-source tools.
-- To reset or rebuild the vector DB, simply delete the `db/` directory.
+Type 'exit' to quit.
 
 ---
+
+## Notes
+- Chroma vector DB is saved in chroma_db/ automatically.
+- Everything works offline.

@@ -1,7 +1,8 @@
 langchain
+langchain-community
+langchain-text-splitters
 chromadb
 sentence-transformers
-transformers
 torch
+numpy
 ollama
-tqdm
